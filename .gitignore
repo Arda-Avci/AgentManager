@@ -25,3 +25,15 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# Markdown Documents
+*.md
+**/*.md
+
+# Exceptions
+!README.md
+!readme.md
+!**/README.md
+!**/readme.md
+!/docs/help/**/*.md
+!docs/help/**/*.md

@@ -1,0 +1,55 @@
+{
+  "name": "agentmanager-windsurf",
+  "displayName": "AgentManager for Windsurf",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AgentManager integration for Windsurf editor. Manage AI agents, assign tasks, and monitor status directly from Windsurf.",
+  "main": "extension.js",
+  "engines": {
+    "windsurf": "^1.0.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentmanager-windsurf.openPanel",
+        "title": "AgentManager: Open Control Panel"
+      },
+      {
+        "command": "agentmanager-windsurf.refresh",
+        "title": "AgentManager: Refresh Status"
+      },
+      {
+        "command": "agentmanager-windsurf.quickAgent",
+        "title": "AgentManager: Quick Agent Command"
+      }
+    ],
+    "configuration": {
+      "title": "AgentManager Windsurf",
+      "properties": {
+        "agentmanager-windsurf.coreUrl": {
+          "type": "string",
+          "default": "http://localhost:3010",
+          "description": "AgentManager Core MCP URL"
+        },
+        "agentmanager-windsurf.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "AgentManager Core API key"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p ."
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "agentmanager-mcp-client": "file:../mcp-client"
+  }
+}

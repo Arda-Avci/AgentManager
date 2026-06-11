@@ -1,0 +1,67 @@
+{
+  "name": "agentmanager-cursor",
+  "displayName": "AgentManager for Cursor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AgentManager integration for Cursor editor. Manage AI agents, assign tasks, and monitor status directly from Cursor.",
+  "main": "extension.js",
+  "engines": {
+    "vscode": "^1.96.0",
+    "cursor": "^0.45.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentmanager-cursor.openPanel",
+        "title": "AgentManager: Open Control Panel"
+      },
+      {
+        "command": "agentmanager-cursor.refresh",
+        "title": "AgentManager: Refresh Status"
+      },
+      {
+        "command": "agentmanager-cursor.quickAgent",
+        "title": "AgentManager: Quick Agent Command"
+      },
+      {
+        "command": "agentmanager-cursor.chatWithAgent",
+        "title": "AgentManager: Chat with Agent"
+      }
+    ],
+    "configuration": {
+      "title": "AgentManager Cursor",
+      "properties": {
+        "agentmanager-cursor.coreUrl": {
+          "type": "string",
+          "default": "http://localhost:3010",
+          "description": "AgentManager Core MCP URL"
+        },
+        "agentmanager-cursor.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "AgentManager Core API key"
+        },
+        "agentmanager-cursor.mcpSseUrl": {
+          "type": "string",
+          "default": "http://localhost:3010/mcp",
+          "description": "AgentManager Core MCP SSE endpoint"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "lint": "eslint src --ext .ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.96.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "agentmanager-mcp-client": "file:../mcp-client"
+  }
+}

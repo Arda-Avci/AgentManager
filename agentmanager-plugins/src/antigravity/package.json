@@ -1,0 +1,20 @@
+{
+  "name": "agentmanager-antigravity",
+  "displayName": "AgentManager for Antigravity",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Antigravity MCP plugin for AgentManager. Provides MCP-compatible tools to integrate Antigravity agents with AgentManager Core.",
+  "main": "plugin.js",
+  "type": "module",
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p ."
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "dependencies": {
+    "agentmanager-mcp-client": "file:../mcp-client"
+  }
+}

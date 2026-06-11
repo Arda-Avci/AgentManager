@@ -41,6 +41,10 @@ app.add_middleware(
 )
 app.add_middleware(APIKeyMiddleware)
 
+if not settings.debug:
+    from src.api.middleware import RateLimitMiddleware
+    app.add_middleware(RateLimitMiddleware)
+
 app.include_router(router)
 
 setup_mcp(router_)

@@ -114,6 +114,7 @@ class ApiKeyModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     key_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    api_key_enc: Mapped[str | None] = mapped_column(String(512), nullable=True)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     device_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -185,3 +186,30 @@ class AgentSkillModel(Base):
     agent_id: Mapped[str] = mapped_column(String(36), ForeignKey("agents.id"), nullable=False, index=True)
     skill_name: Mapped[str] = mapped_column(String(128), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class UsageModel(Base):
+    __tablename__ = "usage"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    agent_id: Mapped[str] = mapped_column(String(36), ForeignKey("agents.id"), nullable=False, index=True)
+    provider: Mapped[str] = mapped_column(String(64), nullable=False)
+    model: Mapped[str] = mapped_column(String(64), nullable=False)
+    prompt_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    completion_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+
+
+class QuotaModel(Base):
+    __tablename__ = "quotas"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    agent_id: Mapped[str] = mapped_column(String(36), ForeignKey("agents.id"), nullable=False, unique=True, index=True)
+    monthly_token_limit: Mapped[int] = mapped_column(Integer, default=0)
+    monthly_cost_limit: Mapped[float] = mapped_column(Float, default=0.0)
+    current_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    current_cost: Mapped[float] = mapped_column(Float, default=0.0)
+    reset_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)

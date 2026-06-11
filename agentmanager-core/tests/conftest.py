@@ -31,6 +31,8 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 @pytest_asyncio.fixture
 async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    app.state.auth_enabled = False
+
     async def _get_session():
         yield db_session
 
@@ -41,3 +43,4 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
     app.dependency_overrides.clear()
+    app.state.auth_enabled = False

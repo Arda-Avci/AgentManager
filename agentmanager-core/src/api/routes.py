@@ -351,6 +351,11 @@ async def list_providers(session: AsyncSession = Depends(get_session)):
     ]
 
 
+@router.get("/providers/types", response_model=list[str])
+async def list_provider_types():
+    return ProviderRegistry.known_types()
+
+
 @router.get("/providers/{name}", response_model=ProviderResponse)
 async def get_provider(
     name: str, session: AsyncSession = Depends(get_session)
@@ -379,11 +384,6 @@ async def validate_provider(
         return ProviderValidateResponse(name=name, valid=valid, error=None)
     except Exception as e:
         return ProviderValidateResponse(name=name, valid=False, error=str(e))
-
-
-@router.get("/providers/types", response_model=list[str])
-async def list_provider_types():
-    return ProviderRegistry.known_types()
 
 
 # ── Auth ──────────────────────────────────────────────────────────────
@@ -1015,6 +1015,119 @@ async def delete_agent_store_key(
     store = AgentStore(session)
     if not await store.delete(agent_id, key):
         raise HTTPException(404, "Store key not found")
+
+
+# ── Billing ──────────────────────────────────────────────────────────────
+@router.get("/billing/usage/{agent_id}", response_model=list[dict])
+async def get_usage(
+    agent_id: str,
+    period: str = "daily",
+    session: AsyncSession = Depends(get_session),
+):
+    from src.billing.tracker import TokenTracker
+
+    tracker = TokenTracker(session)
+    records = await tracker.get_usage(agent_id, period)
+    return [
+        {
+            "id": r.id,
+            "agent_id": r.agent_id,
+            "provider": r.provider,
+            "model": r.model,
+            "prompt_tokens": r.prompt_tokens,
+            "completion_tokens": r.completion_tokens,
+            "cost": r.cost,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in records
+    ]
+
+
+@router.get("/billing/usage/{agent_id}/total")
+async def get_total_usage(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.billing.tracker import TokenTracker
+
+    tracker = TokenTracker(session)
+    total_cost = await tracker.get_total_cost(agent_id)
+    total_tokens = await tracker.get_total_tokens(agent_id)
+    return {"agent_id": agent_id, "total_cost": total_cost, "total_tokens": total_tokens}
+
+
+@router.post("/billing/quota/{agent_id}")
+async def set_quota(
+    agent_id: str,
+    body: dict,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.billing.quota import QuotaManager
+
+    qm = QuotaManager(session)
+    quota = await qm.set_quota(
+        agent_id,
+        monthly_token_limit=body.get("monthly_token_limit", 0),
+        monthly_cost_limit=body.get("monthly_cost_limit", 0.0),
+    )
+    return {
+        "agent_id": quota.agent_id,
+        "monthly_token_limit": quota.monthly_token_limit,
+        "monthly_cost_limit": quota.monthly_cost_limit,
+    }
+
+
+@router.get("/billing/quota/{agent_id}")
+async def get_quota(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.billing.quota import QuotaManager
+
+    qm = QuotaManager(session)
+    check = await qm.check_quota(agent_id)
+    remaining = await qm.get_remaining(agent_id)
+    return {"check": check, "remaining": remaining}
+
+
+# ── Recovery ─────────────────────────────────────────────────────────────
+_recovery_manager: object | None = None
+
+
+def _get_recovery():
+    global _recovery_manager
+    if _recovery_manager is None:
+        from src.recovery.manager import RecoveryManager
+        _recovery_manager = RecoveryManager()
+    return _recovery_manager
+
+
+@router.post("/recovery/register/{agent_id}")
+async def register_agent_recovery(agent_id: str):
+    mgr = _get_recovery()
+    mgr.register_agent(agent_id)
+    return {"status": "registered", "agent_id": agent_id}
+
+
+@router.post("/recovery/crash/{agent_id}")
+async def report_crash(agent_id: str, body: dict):
+    mgr = _get_recovery()
+    error = body.get("error", "unknown error")
+    result = mgr.on_crash(agent_id, error)
+    return result
+
+
+@router.get("/recovery/status/{agent_id}")
+async def get_recovery_status(agent_id: str):
+    mgr = _get_recovery()
+    return mgr.get_status(agent_id)
+
+
+# ── Monitoring ───────────────────────────────────────────────────────────
+@router.get("/monitoring/metrics")
+async def get_metrics():
+    from src.monitoring.metrics import get_collector
+    return get_collector().get_metrics()
 
 
 @router.get("/health")

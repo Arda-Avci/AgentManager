@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.keys import generate_api_key, hash_key, verify_key
+from src.auth.keys import encrypt_api_key, decrypt_api_key, generate_api_key, hash_key, verify_key
 from src.database.models import ApiKeyModel
 
 
@@ -16,12 +16,14 @@ class AuthService:
     ) -> tuple[str, ApiKeyModel]:
         raw_key = generate_api_key()
         key_hash = hash_key(raw_key)
+        encrypted = encrypt_api_key(raw_key)
         model = ApiKeyModel(
             key_hash=key_hash,
             name=name,
             allowed_agent_ids=allowed_agent_ids or [],
             is_active=True,
         )
+        model.api_key_enc = encrypted
         self._session.add(model)
         await self._session.flush()
         return raw_key, model
@@ -39,12 +41,14 @@ class AuthService:
     async def create_device_pairing(self, name: str) -> tuple[str, ApiKeyModel]:
         raw_key = generate_api_key()
         key_hash = hash_key(raw_key)
+        encrypted = encrypt_api_key(raw_key)
         model = ApiKeyModel(
             key_hash=key_hash,
             name=name,
             device_name=name,
             is_active=False,
         )
+        model.api_key_enc = encrypted
         self._session.add(model)
         await self._session.flush()
         return raw_key, model

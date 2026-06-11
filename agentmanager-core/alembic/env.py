@@ -4,6 +4,7 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 from src.database.engine import Base
+from src.config import settings
 from src.database import models
 
 config = context.config
@@ -13,8 +14,19 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
+def _get_sync_url() -> str:
+    url = settings.database_url
+    if url.startswith("sqlite+aiosqlite://"):
+        return url.replace("sqlite+aiosqlite://", "sqlite+pysqlite://", 1)
+    if url.startswith("postgresql+asyncpg://"):
+        return url.replace("postgresql+asyncpg://", "postgresql+psycopg2://", 1)
+    if url.startswith("postgresql://") and "asyncpg" not in url:
+        return url
+    return url
+
+
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
+    url = _get_sync_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -26,8 +38,10 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    cfg = config.get_section(config.config_ini_section, {})
+    cfg["sqlalchemy.url"] = _get_sync_url()
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        cfg,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

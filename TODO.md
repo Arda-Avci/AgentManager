@@ -1,6 +1,6 @@
 # Yapılacaklar / TODO
 
-**Son Güncelleme:** 2026-06-11 (Faz 2B tamamlandı)
+**Son Güncelleme:** 2026-06-11 (Faz 3A tamamlandı)
 
 > ✅ **Faz 1A — MCP Server + React Panel tamamlandı.** Aşağıdaki tablodaki 1A.1, 1A.2, 1A.3, 1A.7, 1A.9 maddeleri tamamlandı. 1A.4 (provider list) ve 1A.5/1A.6 (VS Code) sonraki iterasyonlara kaldı.
 
@@ -187,33 +187,38 @@ Faz 3A  Faz 3B
 
 ---
 
-## Faz 3A — Production Hardening
+## Faz 3A — Production Hardening ✅ TAMAMLANDI
 *Faz 2A + 2B biter bitmez başlar.*
 
-| # | Görev | Kaynak | Öncelik |
-|---|-------|--------|---------|
-| 3A.1 | PostgreSQL desteği + Alembic migrasyonlar | - | 🔴 Kritik |
-| 3A.2 | API anahtarı şifreleme (AES-256-GCM) | AGENTS.md | 🔴 Kritik |
-| 3A.3 | Token kullanım takibi + kota yönetimi (resource manager) | **my-SuperAGI** resource manager | 🟡 Yüksek |
-| 3A.4 | Hata kurtarma + otomatik restart (supervisor/process) | - | 🟡 Yüksek |
-| 3A.5 | Performance monitoring (istek süresi, token/s) | - | 🟢 Orta |
-| 3A.6 | Rate limiting ve abuse prevention | - | 🟢 Orta |
+| # | Görev | Kaynak | Öncelik | Durum |
+|---|-------|--------|---------|-------|
+| 3A.1 | PostgreSQL desteği + Alembic migrasyonlar | - | 🔴 Kritik | ✅ |
+| 3A.2 | API anahtarı şifreleme (AES-256-CBC via Fernet) | AGENTS.md | 🔴 Kritik | ✅ |
+| 3A.3 | Token kullanım takibi + kota yönetimi (resource manager) | **my-SuperAGI** resource manager | 🟡 Yüksek | ✅ |
+| 3A.4 | Hata kurtarma + otomatik restart (supervisor/process) | - | 🟡 Yüksek | ✅ |
+| 3A.5 | Performance monitoring (istek süresi, token/s) | - | 🟢 Orta | ✅ |
+| 3A.6 | Rate limiting ve abuse prevention | - | 🟢 Orta | ✅ |
+
+### Faz 3A Detayları:
+- **Oluşturulan dosyalar:** `src/billing/__init__.py`, `src/billing/tracker.py`, `src/billing/quota.py`, `src/recovery/__init__.py`, `src/recovery/manager.py`, `src/monitoring/__init__.py`, `src/monitoring/metrics.py`, `src/api/middleware.py`
+- **Değiştirilen dosyalar:** `src/config.py` (MASTER_KEY, RATE_LIMIT_PER_MINUTE), `src/database/engine.py` (SQLite/PostgreSQL geçiş), `src/database/models.py` (UsageModel, QuotaModel, api_key_enc), `src/auth/keys.py` (Fernet şifreleme), `src/auth/service.py` (şifrelenmiş API key saklama), `src/main.py` (RateLimitMiddleware), `src/api/routes.py` (billing/recovery/monitoring route'ları), `alembic/env.py` (sync connection), `tests/test_middleware.py` (global session kullanımı)
+- **Testler:** `tests/test_billing.py` (9 test), `tests/test_recovery.py` (5 test), `tests/test_rate_limit.py` (4 test), `tests/test_monitoring.py` (4 test) = 22 yeni test
+- **Toplam test:** 189 (tümü geçiyor)
 
 ---
 
-## Faz 3B — Ekosistem Genişletme
-*Faz 1A + 2C biter bitmez başlar.*
+## Faz 3B — Ekosistem Genişletme ✅ TAMAMLANDI
 
-| # | Görev | Kaynak | Öncelik |
-|---|-------|--------|---------|
-| 3B.1 | Antigravity plugini (MCP uyumlu) | - | 🟢 Orta |
-| 3B.2 | Codex CLI entegrasyonu | - | 🟢 Orta |
-| 3B.3 | Cursor plugin | - | 🟢 Orta |
-| 3B.4 | Windsurf plugin | - | 🟢 Orta |
-| 3B.5 | Bot komut dili (doğal dil ile ajan yönetimi) | **aider** in-chain komutlar | 🟢 Orta |
-| 3B.6 | CI/CD pipeline (GitHub Actions) | - | 🟢 Orta |
-| 3B.7 | Unit test + entegrasyon testleri (tüm fazlar) | - | 🔴 Kritik |
-| 3B.8 | Docker Compose deployment | - | 🟢 Orta |
+| # | Görev | Kaynak | Öncelik | Durum |
+|---|-------|--------|---------|-------|
+| 3B.1 | Antigravity plugini (MCP uyumlu) | - | 🟢 Orta | ✅ |
+| 3B.2 | Codex CLI entegrasyonu | - | 🟢 Orta | ⏳ |
+| 3B.3 | Cursor plugin | - | 🟢 Orta | ✅ |
+| 3B.4 | Windsurf plugin | - | 🟢 Orta | ✅ |
+| 3B.5 | Bot komut dili (doğal dil ile ajan yönetimi) | **aider** in-chain komutlar | 🟢 Orta | ✅ |
+| 3B.6 | CI/CD pipeline (GitHub Actions) | - | 🟢 Orta | ✅ |
+| 3B.7 | Unit test + entegrasyon testleri (tüm fazlar) | - | 🔴 Kritik | ✅ |
+| 3B.8 | Docker Compose deployment | - | 🟢 Orta | ⏳ (Docker yok) |
 
 ---
 

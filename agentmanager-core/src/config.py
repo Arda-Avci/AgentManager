@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     allowed_origins: list[str] = ["*"]
 
+    master_key: str = "change-me-master-key-32-bytes-long!"
+
+    rate_limit_per_minute: int = 60
+
     anthropic_api_key: str = ""
     gemini_api_key: str = ""
     ollama_base_url: str = "http://localhost:11434"

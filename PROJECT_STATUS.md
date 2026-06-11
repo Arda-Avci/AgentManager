@@ -1,6 +1,6 @@
 # Proje Durumu / Project Status
 
-**Son Güncelleme:** 2026-06-11 (Faz 2B tamamlandı)
+**Son Güncelleme:** 2026-06-11 (Faz 3A + 3B tamamlandı)
 
 ---
 
@@ -59,6 +59,19 @@
 - [x] **Faz 2B: Per-Agent Store** — `AgentStore` (anahtar-değer deposu, SQLite persist) + `AgentStoreModel`
 - [x] **Faz 2B: API Route'ları** — 9 yeni endpoint (delegasyon, skill yönetimi, template, store)
 - [x] **Faz 2B: Testler** — 17+ yeni test (skills, delegation, templates, agent_store), tümü geçiyor (131 total)
+- [x] **Faz 3B: Bot Komut Dili** — `CommandLanguage` (doğal dil → yapılandırılmış komut), 12+ pattern (create, ask, schedule, list, pause, resume, delete, status, tasks, assign, delegate, help)
+- [x] **Faz 3B: Cursor Plugin** — `agentmanager-plugins/src/cursor/extension.ts` + `package.json`, Status bar, Quick Pick, Webview panel + chat
+- [x] **Faz 3B: Windsurf Plugin** — `agentmanager-plugins/src/windsurf/extension.ts` + `package.json`, Status bar, Quick Pick, Webview panel
+- [x] **Faz 3B: Antigravity Plugin** — `agentmanager-plugins/src/antigravity/plugin.ts` + `package.json`, 7 MCP tool (list/get/create agents, chat, tasks, tools, health)
+- [x] **Faz 3B: GitHub Actions CI/CD** — `.github/workflows/test.yml`, Python 3.11/3.12/3.13 matrix, Windows+Ubuntu
+- [x] **Faz 3B: Test Coverage** — 36 yeni test (bot 18, api 6, cli 5, middleware 6), tümü geçiyor (189 total)
+- [x] **Faz 3A: PostgreSQL Desteği** — `engine.py`: SQLite/PostgreSQL otomatik geçiş (`DATABASE_URL` env), `alembic/env.py`: sync connection, initial migration oluşturuldu
+- [x] **Faz 3A: API Anahtarı Şifreleme** — `keys.py`: Fernet (AES-256-CBC) ile `encrypt_api_key`/`decrypt_api_key`, `service.py`: DB'de şifrelenmiş saklama, `config.py`: `MASTER_KEY` env değişkeni
+- [x] **Faz 3A: Token Takibi + Kota Yönetimi** — `billing/tracker.py` (TokenTracker: track/get_usage/get_total_cost), `billing/quota.py` (QuotaManager: set/check/get_remaining), `UsageModel` + `QuotaModel`, 4 API route
+- [x] **Faz 3A: Hata Kurtarma** — `recovery/manager.py` (RecoveryManager: register/on_crash/get_status, max_restarts=3), 3 API route
+- [x] **Faz 3A: Rate Limiting** — `api/middleware.py` (RateLimitMiddleware: token bucket, `RATE_LIMIT_PER_MINUTE`, 429 response), `debug=False` iken aktif
+- [x] **Faz 3A: Performance Monitoring** — `monitoring/metrics.py` (MetricsCollector: track_request_duration/track_token_usage/get_metrics), in-memory toplama, 1 API route
+- [x] **Faz 3A: Testler** — 16 yeni test (billing 9, recovery 5, rate_limit 4, monitoring 4), tümü geçiyor (189 total)
 
 ---
 

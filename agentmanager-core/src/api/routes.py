@@ -18,6 +18,8 @@ from src.api.schemas import (
     ChainEntryResponse,
     ChatRequest,
     ChatResponse,
+    ContinuousStartRequest,
+    ContinuousStatusResponse,
     CronCreate,
     CronResponse,
     DelegateRequest,
@@ -31,13 +33,18 @@ from src.api.schemas import (
     ProviderCreate,
     ProviderResponse,
     ProviderValidateResponse,
+    RepoMapRequest,
+    RepoMapResponse,
+    RepoMapStoreResponse,
     SessionResponse,
     SkillResponse,
     StoreEntryResponse,
     StoreSetRequest,
     TaskCreate,
     TaskExecuteResponse,
+    TaskFromTemplateRequest,
     TaskResponse,
+    TaskTemplateResponse,
     TemplateResponse,
     ToolCallRequest,
     ToolCreate,
@@ -51,6 +58,7 @@ from src.logging.manager import LogManager
 from src.logging.models import ActionLog, ThoughtLog
 from src.providers.registry import ProviderRegistry
 from src.router import LLMRouter
+from src.commands import CommandHandler, parse_command
 from src.session import SessionManager
 from src.tasks.executor import TaskExecutor
 from src.tasks.queue import TaskPriority, TaskQueue
@@ -168,6 +176,14 @@ async def chat(
     router_: LLMRouter = Depends(lambda: router_),
     session: AsyncSession = Depends(get_session),
 ):
+    cmd = parse_command(body.message)
+    if cmd:
+        from src.commands import CommandHandler
+
+        sm = SessionManager(session)
+        result = await CommandHandler(sm, body.agent_id).handle(cmd)
+        return ChatResponse(response=result.response, used_model=result.used_model)
+
     from src.agents.registry import AgentRegistry
 
     registry = AgentRegistry(session)
@@ -692,6 +708,53 @@ async def list_agent_queue(
     ]
 
 
+# ── Task Templates ─────────────────────────────────────────────────────
+@router.get("/tasks/templates", response_model=list[TaskTemplateResponse])
+async def list_task_templates():
+    from src.tasks.templates import TASK_TEMPLATES
+
+    return [
+        TaskTemplateResponse(
+            name=t["name"],
+            description=t["description"],
+            default_goal=t["default_goal"],
+            suggested_agent_role=t["suggested_agent_role"],
+        )
+        for t in TASK_TEMPLATES
+    ]
+
+
+@router.post("/tasks/from-template", response_model=TaskResponse, status_code=201)
+async def create_task_from_template(
+    body: TaskFromTemplateRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.tasks.templates import TASK_TEMPLATES
+
+    template = next((t for t in TASK_TEMPLATES if t["name"] == body.template_name), None)
+    if not template:
+        raise HTTPException(404, f"Task template '{body.template_name}' not found")
+
+    from src.database.models import AgentModel
+
+    agent = await session.get(AgentModel, body.agent_id)
+    if not agent:
+        raise HTTPException(404, "Agent not found")
+
+    goal = body.custom_goal or template["default_goal"]
+    task = TaskModel(agent_id=body.agent_id, goal=goal)
+    session.add(task)
+    await session.flush()
+    return TaskResponse(
+        id=task.id,
+        agent_id=task.agent_id,
+        goal=task.goal,
+        status=task.status,
+        result=task.result,
+        created_at=task.created_at,
+    )
+
+
 @router.get("/tasks/{task_id}/chain", response_model=list[ChainEntryResponse])
 async def get_task_chain(task_id: str):
     log_manager = LogManager()
@@ -1128,6 +1191,136 @@ async def get_recovery_status(agent_id: str):
 async def get_metrics():
     from src.monitoring.metrics import get_collector
     return get_collector().get_metrics()
+
+
+# ── Repo Map ────────────────────────────────────────────────────────────
+@router.post("/tools/repo-map", response_model=RepoMapResponse)
+async def generate_repo_map(body: RepoMapRequest):
+    from src.tools.repo_map import RepoMap
+
+    mapper = RepoMap()
+    map_text = mapper.generate_map(body.path, body.depth)
+    context = None
+    if body.include_signatures:
+        context = mapper.get_repo_context(body.path)
+    return RepoMapResponse(map=map_text, context=context)
+
+
+@router.get("/tools/repo-map/{agent_id}", response_model=RepoMapStoreResponse)
+async def get_agent_repo_map(
+    agent_id: str,
+    path: str = ".",
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.store import AgentStore
+
+    store = AgentStore(session)
+    key = f"repo_map:{path}"
+    value = await store.get(agent_id, key)
+    return RepoMapStoreResponse(agent_id=agent_id, path=path, map=value)
+
+
+@router.post("/tools/repo-map/{agent_id}", response_model=RepoMapStoreResponse)
+async def save_agent_repo_map(
+    agent_id: str,
+    body: RepoMapRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.store import AgentStore
+    from src.tools.repo_map import RepoMap
+
+    mapper = RepoMap()
+    map_text = mapper.generate_map(body.path, body.depth)
+
+    store = AgentStore(session)
+    key = f"repo_map:{body.path}"
+    await store.set(agent_id, key, map_text)
+    return RepoMapStoreResponse(agent_id=agent_id, path=body.path, map=map_text)
+
+
+# ── Continuous Mode ──────────────────────────────────────────────────
+_continuous_instances: dict[str, object] = {}
+
+
+def _get_continuous(session: AsyncSession) -> object:
+    key = id(session)
+    if key not in _continuous_instances:
+        from src.agents.continuous import ContinuousMode
+        _continuous_instances[key] = ContinuousMode(session, None, ws_manager)
+    return _continuous_instances[key]
+
+
+@router.post(
+    "/agents/{agent_id}/continuous/start",
+    response_model=ContinuousStatusResponse,
+    status_code=201,
+)
+async def continuous_start(
+    agent_id: str,
+    body: ContinuousStartRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.continuous import ContinuousMode
+
+    cm = ContinuousMode(session, None, ws_manager)
+    result = await cm.start(agent_id, body.goal, body.max_iterations)
+    if "error" in result:
+        raise HTTPException(400, result["error"])
+    return ContinuousStatusResponse(**result)
+
+
+@router.post("/agents/{agent_id}/continuous/stop", response_model=ContinuousStatusResponse)
+async def continuous_stop(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.continuous import ContinuousMode
+
+    cm = ContinuousMode(session, None, ws_manager)
+    result = await cm.stop(agent_id)
+    if "error" in result:
+        raise HTTPException(400, result["error"])
+    return ContinuousStatusResponse(**result)
+
+
+@router.get("/agents/{agent_id}/continuous/status", response_model=ContinuousStatusResponse)
+async def continuous_status(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.continuous import ContinuousMode
+
+    cm = ContinuousMode(session, None, ws_manager)
+    result = cm.get_status(agent_id)
+    return ContinuousStatusResponse(**result)
+
+
+@router.post("/agents/{agent_id}/continuous/pause", response_model=ContinuousStatusResponse)
+async def continuous_pause(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.continuous import ContinuousMode
+
+    cm = ContinuousMode(session, None, ws_manager)
+    result = await cm.pause(agent_id)
+    if "error" in result:
+        raise HTTPException(400, result["error"])
+    return ContinuousStatusResponse(**result)
+
+
+@router.post("/agents/{agent_id}/continuous/resume", response_model=ContinuousStatusResponse)
+async def continuous_resume(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.continuous import ContinuousMode
+
+    cm = ContinuousMode(session, None, ws_manager)
+    result = await cm.resume(agent_id)
+    if "error" in result:
+        raise HTTPException(400, result["error"])
+    return ContinuousStatusResponse(**result)
 
 
 @router.get("/health")

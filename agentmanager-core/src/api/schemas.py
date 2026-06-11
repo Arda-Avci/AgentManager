@@ -43,6 +43,19 @@ class TaskCreate(BaseModel):
     parent_task_id: str | None = None
 
 
+class TaskTemplateResponse(BaseModel):
+    name: str
+    description: str
+    default_goal: str
+    suggested_agent_role: str
+
+
+class TaskFromTemplateRequest(BaseModel):
+    template_name: str
+    agent_id: str
+    custom_goal: str | None = None
+
+
 class TaskResponse(BaseModel):
     id: str
     agent_id: str
@@ -259,3 +272,36 @@ class FeatureFlagResponse(BaseModel):
 
 class FeatureFlagUpdate(BaseModel):
     value: bool
+
+
+# ── Repo Map ──────────────────────────────────────────────────────────
+class RepoMapRequest(BaseModel):
+    path: str = Field(".", description="Directory path to scan")
+    depth: int = Field(3, ge=1, le=10)
+    include_signatures: bool = False
+
+
+class RepoMapResponse(BaseModel):
+    map: str
+    context: dict | None = None
+
+
+class RepoMapStoreResponse(BaseModel):
+    agent_id: str
+    path: str
+    map: str | None = None
+
+
+class ContinuousStartRequest(BaseModel):
+    goal: str = Field(..., min_length=1, max_length=4096)
+    max_iterations: int = Field(10, ge=1, le=100)
+
+
+class ContinuousStatusResponse(BaseModel):
+    agent_id: str
+    status: str
+    goal: str | None = None
+    current_iteration: int = 0
+    max_iterations: int = 0
+    results_count: int = 0
+    last_result: dict | None = None

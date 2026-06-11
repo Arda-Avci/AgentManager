@@ -7,6 +7,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.bot.config import get_config
+from src.commands import CommandHandler, parse_command
 
 logger = logging.getLogger(__name__)
 
@@ -238,6 +239,27 @@ async def handle_resume(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await update.message.reply_text(f"⚠️ Ajan devam ettirilemedi: {e}")
 
 
+async def handle_map(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not await _check_access(update):
+        return
+    path = " ".join(context.args) if context.args else "."
+    try:
+        result = await _api_post(
+            "/api/v1/tools/repo-map",
+            {"path": path, "depth": 3, "include_signatures": False},
+        )
+        map_text = result.get("map", "")
+        if not map_text:
+            await update.message.reply_text("⚠️ Repo haritası oluşturulamadı.")
+            return
+        text = f"📂 *Repo Haritası:* `{path}`\n```\n{map_text}\n```"
+        if len(text) > 4000:
+            text = text[:4000] + "\n... (devamı kesildi)"
+        await update.message.reply_text(text, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Repo haritası alınamadı: {e}")
+
+
 async def handle_free_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not await _check_access(update):
         return
@@ -245,6 +267,23 @@ async def handle_free_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     message_text = update.message.text
     if not message_text:
         return
+
+    cmd = parse_command(message_text)
+    if cmd:
+        try:
+            session_data = await _api_get(f"/api/v1/session/{chat_id}")
+            agent_id = session_data.get("active_agent_id", chat_id)
+            result = await _api_post(
+                "/api/v1/chat",
+                {"agent_id": agent_id, "message": message_text},
+            )
+            await update.message.reply_text(
+                result.get("response", ""), parse_mode="Markdown"
+            )
+        except Exception as e:
+            await update.message.reply_text(f"⚠️ Komut hatası: {e}")
+        return
+
     try:
         session = await _api_get(f"/api/v1/session/{chat_id}")
     except Exception as e:

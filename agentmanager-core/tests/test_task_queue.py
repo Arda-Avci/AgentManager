@@ -157,3 +157,85 @@ async def test_agent_queue_route(client: AsyncClient):
     assert resp.status_code == 200
     data = resp.json()
     assert len(data) == 2
+
+
+@pytest.mark.asyncio
+async def test_list_task_templates(client: AsyncClient):
+    resp = await client.get("/api/v1/tasks/templates")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 5
+    names = [t["name"] for t in data]
+    assert "daily-standup" in names
+    assert "code-review" in names
+    assert "research-topic" in names
+    assert "write-docs" in names
+    assert "generate-tests" in names
+    for t in data:
+        assert "description" in t
+        assert "default_goal" in t
+        assert "suggested_agent_role" in t
+
+
+@pytest.mark.asyncio
+async def test_create_task_from_template(client: AsyncClient):
+    create_resp = await client.post(
+        "/api/v1/agents",
+        json={"name": "template-agent", "provider": "openai", "model": "gpt-4o"},
+    )
+    agent_id = create_resp.json()["id"]
+
+    resp = await client.post(
+        "/api/v1/tasks/from-template",
+        json={"template_name": "daily-standup", "agent_id": agent_id},
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["agent_id"] == agent_id
+    assert data["goal"] == "What was done yesterday, what is planned today, any blockers"
+    assert data["status"] == "pending"
+
+
+@pytest.mark.asyncio
+async def test_create_task_from_template_with_custom_goal(client: AsyncClient):
+    create_resp = await client.post(
+        "/api/v1/agents",
+        json={"name": "template-agent-2", "provider": "openai", "model": "gpt-4o"},
+    )
+    agent_id = create_resp.json()["id"]
+
+    resp = await client.post(
+        "/api/v1/tasks/from-template",
+        json={
+            "template_name": "code-review",
+            "agent_id": agent_id,
+            "custom_goal": "Review PR #42 for security issues",
+        },
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["goal"] == "Review PR #42 for security issues"
+
+
+@pytest.mark.asyncio
+async def test_create_task_from_template_not_found(client: AsyncClient):
+    create_resp = await client.post(
+        "/api/v1/agents",
+        json={"name": "template-agent-3", "provider": "openai", "model": "gpt-4o"},
+    )
+    agent_id = create_resp.json()["id"]
+
+    resp = await client.post(
+        "/api/v1/tasks/from-template",
+        json={"template_name": "nonexistent", "agent_id": agent_id},
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_task_from_template_agent_not_found(client: AsyncClient):
+    resp = await client.post(
+        "/api/v1/tasks/from-template",
+        json={"template_name": "daily-standup", "agent_id": "nonexistent"},
+    )
+    assert resp.status_code == 404

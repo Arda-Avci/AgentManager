@@ -167,7 +167,7 @@ Faz 3A  Faz 3B
 | 2B.7 | Skill sistemi (role özel prosedür şablonları) | agentclaw Ch.7 | 🟡 Yüksek | ✅ |
 | 2B.8 | Per-agent memory store (çalışma notları, context) | agentclaw Ch.6 | 🟡 Yüksek | ✅ |
 | 2B.9 | Görev zinciri (Ajan-A → Ajan-B → Ajan-C sıralı) + Şablonlar | 💡 Yeni fikir | 🟡 Yüksek | ✅ |
-| 2B.10 | Görev şablonları (sık kullanılan görevleri kaydet) | 💡 Yeni fikir | 🟢 Orta |
+| 2B.10 | Görev şablonları (sık kullanılan görevleri kaydet) | 💡 Yeni fikir | 🟢 Orta | ✅ |
 
 ---
 
@@ -181,9 +181,9 @@ Faz 3A  Faz 3B
 | 2C.3 | Ajanlara web scraping/file reading tool yeteneği | appflowy ai_tool | 🟡 Yüksek | ✅ |
 | 2C.4 | VS Code Plugin (extension + webview panel + status bar) | - | 🔴 Kritik | ✅ |
 | 2C.5 | TypeScript MCP Client library | - | 🔴 Kritik | ✅ |
-| 2C.6 | In-chain chat komutları (/add, /drop, /undo, /diff, /run) | **aider** komut sistemi | 🟡 Yüksek | ⏳ |
-| 2C.7 | Repo haritası (ctags ile kod tabanı anlama) | **aider** repo-map | 🟢 Orta | ⏳ |
-| 2C.8 | Continuous mode (kullanıcı onayı olmadan otonom) | **Auto-GPT** continuous mode | 🟢 Orta | ⏳ |
+| 2C.6 | In-chain chat komutları (/add, /drop, /undo, /diff, /run) | **aider** komut sistemi | 🟡 Yüksek | ✅ |
+| 2C.7 | Repo haritası (ctags ile kod tabanı anlama) | **aider** repo-map | 🟢 Orta | ✅ |
+| 2C.8 | Continuous mode (kullanıcı onayı olmadan otonom) | **Auto-GPT** continuous mode | 🟢 Orta | ✅ |
 
 ---
 
@@ -203,7 +203,7 @@ Faz 3A  Faz 3B
 - **Oluşturulan dosyalar:** `src/billing/__init__.py`, `src/billing/tracker.py`, `src/billing/quota.py`, `src/recovery/__init__.py`, `src/recovery/manager.py`, `src/monitoring/__init__.py`, `src/monitoring/metrics.py`, `src/api/middleware.py`
 - **Değiştirilen dosyalar:** `src/config.py` (MASTER_KEY, RATE_LIMIT_PER_MINUTE), `src/database/engine.py` (SQLite/PostgreSQL geçiş), `src/database/models.py` (UsageModel, QuotaModel, api_key_enc), `src/auth/keys.py` (Fernet şifreleme), `src/auth/service.py` (şifrelenmiş API key saklama), `src/main.py` (RateLimitMiddleware), `src/api/routes.py` (billing/recovery/monitoring route'ları), `alembic/env.py` (sync connection), `tests/test_middleware.py` (global session kullanımı)
 - **Testler:** `tests/test_billing.py` (9 test), `tests/test_recovery.py` (5 test), `tests/test_rate_limit.py` (4 test), `tests/test_monitoring.py` (4 test) = 22 yeni test
-- **Toplam test:** 189 (tümü geçiyor)
+- **Toplam test:** 244 (tümü geçiyor)
 
 ---
 
@@ -212,7 +212,7 @@ Faz 3A  Faz 3B
 | # | Görev | Kaynak | Öncelik | Durum |
 |---|-------|--------|---------|-------|
 | 3B.1 | Antigravity plugini (MCP uyumlu) | - | 🟢 Orta | ✅ |
-| 3B.2 | Codex CLI entegrasyonu | - | 🟢 Orta | ⏳ |
+| 3B.2 | Codex CLI entegrasyonu | - | 🟢 Orta | ✅ |
 | 3B.3 | Cursor plugin | - | 🟢 Orta | ✅ |
 | 3B.4 | Windsurf plugin | - | 🟢 Orta | ✅ |
 | 3B.5 | Bot komut dili (doğal dil ile ajan yönetimi) | **aider** in-chain komutlar | 🟢 Orta | ✅ |

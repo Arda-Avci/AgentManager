@@ -10,6 +10,7 @@ from src.bot.handlers import (
     handle_agent,
     handle_agents,
     handle_free_text,
+    handle_map,
     handle_pause,
     handle_resume,
     handle_start,
@@ -32,6 +33,7 @@ def build_application() -> Application:
             BotCommand("tasks", "Bekleyen/tamamlanan görevler"),
             BotCommand("pause", "<isim> ile ajanı duraklat"),
             BotCommand("resume", "<isim> ile ajanı devam ettir"),
+            BotCommand("map", "[yol] ile repo haritasını göster"),
         ]
         await app.bot.set_my_commands(commands)
 
@@ -49,6 +51,7 @@ def build_application() -> Application:
     app.add_handler(CommandHandler("agent", handle_agent))
     app.add_handler(CommandHandler("pause", handle_pause))
     app.add_handler(CommandHandler("resume", handle_resume))
+    app.add_handler(CommandHandler("map", handle_map))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_free_text))
 
     return app

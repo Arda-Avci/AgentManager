@@ -16,6 +16,7 @@ class FeatureFlag(StrEnum):
     LOOP_DETECTION = "LOOP_DETECTION"
     STREAMING_CHAT = "STREAMING_CHAT"
     AUDIT_LOGGING = "AUDIT_LOGGING"
+    CONTINUOUS_MODE = "CONTINUOUS_MODE"
 
 
 _DEFAULT_FLAGS: dict[str, bool] = {
@@ -27,6 +28,7 @@ _DEFAULT_FLAGS: dict[str, bool] = {
     FeatureFlag.LOOP_DETECTION: True,
     FeatureFlag.STREAMING_CHAT: True,
     FeatureFlag.AUDIT_LOGGING: False,
+    FeatureFlag.CONTINUOUS_MODE: False,
 }
 
 

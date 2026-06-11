@@ -6,5 +6,6 @@
   "TASK_EXECUTOR": true,
   "LOOP_DETECTION": true,
   "STREAMING_CHAT": true,
-  "AUDIT_LOGGING": false
+  "AUDIT_LOGGING": false,
+  "CONTINUOUS_MODE": false
 }

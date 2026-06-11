@@ -1,0 +1,64 @@
+{
+  "name": "agentmanager-codex-cli",
+  "displayName": "AgentManager for Codex CLI",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AgentManager integration for OpenAI Codex CLI. Manage AI agents, assign tasks, and chat via /agent commands.",
+  "main": "extension.js",
+  "engines": {
+    "codex-cli": "^0.1.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentmanager-codex-cli.listAgents",
+        "title": "/agent list — List all agents"
+      },
+      {
+        "command": "agentmanager-codex-cli.chat",
+        "title": "/agent chat <name> <message> — Chat with an agent"
+      },
+      {
+        "command": "agentmanager-codex-cli.task",
+        "title": "/agent task <name> <goal> — Assign a task to an agent"
+      },
+      {
+        "command": "agentmanager-codex-cli.status",
+        "title": "/agent status — Show AgentManager connection status"
+      }
+    ],
+    "configuration": {
+      "title": "AgentManager Codex CLI",
+      "properties": {
+        "agentmanager-codex-cli.coreUrl": {
+          "type": "string",
+          "default": "http://localhost:3010",
+          "description": "AgentManager Core REST API URL"
+        },
+        "agentmanager-codex-cli.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "AgentManager Core API key"
+        },
+        "agentmanager-codex-cli.mcpStdioScript": {
+          "type": "string",
+          "default": "",
+          "description": "Path to codex_handler.py for MCP over stdio connection"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p ."
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "agentmanager-mcp-client": "file:../mcp-client"
+  }
+}

@@ -1,6 +1,6 @@
 # Proje Durumu / Project Status
 
-**Son Güncelleme:** 2026-06-11
+**Son Güncelleme:** 2026-06-11 (Track 2C)
 
 ---
 
@@ -14,7 +14,7 @@
 | **Repo Analizi** | ✅ Tamamlandı | 13 repo analiz edildi (orkun.md), pattern'ler belirlendi |
 | **PRD** | ✅ Yayımlandı | GitHub Issue #1 |
 | **Özellik Planı** | ✅ Güncellendi | 60+ madde, 10 faz, 5 paralel track (TODO.md) |
-| **Geliştirme** | ⏳ Başlamadı | Faz 0 bekliyor |
+| **Geliştirme** | ✅ Devam Ediyor | Faz 1A, 1D, 2C tamamlandı |
 
 ---
 
@@ -34,6 +34,17 @@
 - [x] Project_Plan.md (ilk plan dokümanı)
 - [x] 13 GitHub repo analizi (orkun.md) — pattern çıkarımı
 - [x] PRD Issue #1: https://github.com/Arda-Avci/AgentManager/issues/1
+- [x] **Faz 1A: MCP Server** — 7 MCP tool (list_agents, get_agent_detail, create_agent, assign_task, pause_agent, resume_agent, chat_with_agent) FastAPI'ye mount edildi (`/mcp` SSE endpoint)
+- [x] **Faz 1A: React Panel** — Vite + React + TypeScript panel oluşturuldu (Dashboard, Agent Creator, Log Stream sayfaları)
+- [x] **Faz 1A: WebSocket Log Stream** — Canlı log akışı için WS endpoint (`/api/v1/ws/logs/{agent_id}`)
+- [x] **Faz 1A: Testler** — 11 yeni test (10 MCP + 1 WS), tümü geçiyor
+- [x] **Faz 2C: MCP Client** — `MCPClient` class'ı (connect/list_tools/call_tool/disconnect)
+- [x] **Faz 2C: MCP Tool Registry** — Tool CRUD, ajan-tool atama, yaşam döngüsü
+- [x] **Faz 2C: Tool Sistemi** — `BaseTool` abstract + WebSearchTool, GitTool, FileTool
+- [x] **Faz 2C: ToolModel** — Veritabanı modeli (name, description, mcp_server_url, agent_id, is_active, config)
+- [x] **Faz 2C: Tools API** — `GET/POST /tools`, `GET/DELETE /tools/{id}`, `POST /tools/{id}/call`
+- [x] **Faz 2C: VS Code Plugin** — Extension iskeleti, Webview panel, Status bar, MCP Client TS library
+- [x] **Faz 2C: Testler** — 12 test (MCP Client, Registry, API endpoints), tümü geçiyor (31 total)
 
 ---
 

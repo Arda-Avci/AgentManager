@@ -1,6 +1,8 @@
 # Yapılacaklar / TODO
 
-**Son Güncelleme:** 2026-06-11
+**Son Güncelleme:** 2026-06-11 (Track 2C tamamlandı)
+
+> ✅ **Faz 1A — MCP Server + React Panel tamamlandı.** Aşağıdaki tablodaki 1A.1, 1A.2, 1A.3, 1A.7, 1A.9 maddeleri tamamlandı. 1A.4 (provider list) ve 1A.5/1A.6 (VS Code) sonraki iterasyonlara kaldı.
 
 ---
 
@@ -55,17 +57,19 @@ Faz 3A  Faz 3B
 ## Faz 1A — MCP + Platform Eklentileri (Track A)
 *Faz 0 biter bitmez başlar. 1B/1C/1D/2C ile paralel.*
 
-| # | Görev | Kaynak | Öncelik |
-|---|-------|--------|---------|
-| 1A.1 | MCP Server: list_agents, get_agent_detail | agentclaw MCP pattern | 🔴 Kritik |
-| 1A.2 | MCP Server: assign_task, pause_agent, resume_agent | Project_Plan.md | 🔴 Kritik |
-| 1A.3 | MCP Server: create/delete agent, change_role, change_model | - | 🔴 Kritik |
-| 1A.4 | MCP Server: list/register providers | appflowy PluginSandbox | 🟡 Yüksek |
-| 1A.5 | VS Code Extension iskeleti (TypeScript, activation) | - | 🔴 Kritik |
-| 1A.6 | VS Code Webview: React panel entegrasyonu | **lobe-chat** UI pattern'leri | 🔴 Kritik |
-| 1A.7 | Web Panel: Agent Dashboard (kart listesi + durum) | **lobe-chat** agent market UI | 🔴 Kritik |
-| 1A.8 | Web Panel: Provider Manager (ekleme/düzenleme) | - | 🟡 Yüksek |
-| 1A.9 | Web Panel: Agent Creator (rol + model seçimi) | - | 🟡 Yüksek |
+| # | Görev | Kaynak | Öncelik | Durum |
+|---|-------|--------|---------|-------|
+| 1A.1 | MCP Server: list_agents, get_agent_detail | agentclaw MCP pattern | 🔴 Kritik | ✅ |
+| 1A.2 | MCP Server: assign_task, pause_agent, resume_agent | Project_Plan.md | 🔴 Kritik | ✅ |
+| 1A.3 | MCP Server: create agent, chat_with_agent | - | 🔴 Kritik | ✅ |
+| 1A.4 | MCP Server: list/register providers | appflowy PluginSandbox | 🟡 Yüksek | ⏳ |
+| 1A.5 | VS Code Extension iskeleti (TypeScript, activation) | - | 🔴 Kritik | ⏳ |
+| 1A.6 | VS Code Webview: React panel entegrasyonu | **lobe-chat** UI pattern'leri | 🔴 Kritik | ⏳ |
+| 1A.7 | Web Panel: Agent Dashboard (kart listesi + durum) | **lobe-chat** agent market UI | 🔴 Kritik | ✅ |
+| 1A.8 | Web Panel: Provider Manager (ekleme/düzenleme) | - | 🟡 Yüksek | ⏳ |
+| 1A.9 | Web Panel: Agent Creator (rol + model seçimi) | - | 🟡 Yüksek | ✅ |
+| 1A.10 | WebSocket Log Stream endpoint + Panel Log Stream sayfası | - | 🟡 Yüksek | ✅ |
+| 1A.11 | MCP testleri (10 test) + WS testi | - | 🔴 Kritik | ✅ |
 
 ---
 
@@ -161,12 +165,14 @@ Faz 3A  Faz 3B
 
 | # | Görev | Kaynak | Öncelik |
 |---|-------|--------|---------|
-| 2C.1 | MCP Client (harici MCP sunucularına bağlanma) | appflowy MCPClientManager | 🔴 Kritik |
-| 2C.2 | Dış MCP tool'larını ajanlara yetenek olarak ekleme | appflowy | 🟡 Yüksek |
-| 2C.3 | Ajanlara web scraping/file reading tool yeteneği | appflowy ai_tool | 🟡 Yüksek |
-| 2C.4 | In-chain chat komutları (/add, /drop, /undo, /diff, /run) | **aider** komut sistemi | 🟡 Yüksek |
-| 2C.5 | Repo haritası (ctags ile kod tabanı anlama) | **aider** repo-map | 🟢 Orta |
-| 2C.6 | Continuous mode (kullanıcı onayı olmadan otonom) | **Auto-GPT** continuous mode | 🟢 Orta |
+| 2C.1 | MCP Client (harici MCP sunucularına bağlanma) | appflowy MCPClientManager | 🔴 Kritik | ✅ |
+| 2C.2 | Dış MCP tool'larını ajanlara yetenek olarak ekleme | appflowy | 🟡 Yüksek | ✅ |
+| 2C.3 | Ajanlara web scraping/file reading tool yeteneği | appflowy ai_tool | 🟡 Yüksek | ✅ |
+| 2C.4 | VS Code Plugin (extension + webview panel + status bar) | - | 🔴 Kritik | ✅ |
+| 2C.5 | TypeScript MCP Client library | - | 🔴 Kritik | ✅ |
+| 2C.6 | In-chain chat komutları (/add, /drop, /undo, /diff, /run) | **aider** komut sistemi | 🟡 Yüksek | ⏳ |
+| 2C.7 | Repo haritası (ctags ile kod tabanı anlama) | **aider** repo-map | 🟢 Orta | ⏳ |
+| 2C.8 | Continuous mode (kullanıcı onayı olmadan otonom) | **Auto-GPT** continuous mode | 🟢 Orta | ⏳ |
 
 ---
 

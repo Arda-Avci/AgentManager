@@ -1,0 +1,56 @@
+{
+  "name": "agentmanager-plugins",
+  "displayName": "AgentManager Plugins",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AgentManager VS Code Extension and MCP Client Library",
+  "main": "src/vscode/extension.js",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentmanager.openPanel",
+        "title": "AgentManager: Open Control Panel"
+      },
+      {
+        "command": "agentmanager.refresh",
+        "title": "AgentManager: Refresh Status"
+      }
+    ],
+    "configuration": {
+      "title": "AgentManager",
+      "properties": {
+        "agentmanager.coreUrl": {
+          "type": "string",
+          "default": "http://localhost:3010",
+          "description": "AgentManager Core API URL"
+        },
+        "agentmanager.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for AgentManager Core"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "lint": "eslint src --ext .ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.96.0",
+    "typescript": "^5.7.0",
+    "@vscode/vsce": "^3.2.0",
+    "eslint": "^9.0.0"
+  },
+  "dependencies": {
+    "agentmanager-mcp-client": "file:./src/mcp-client"
+  }
+}

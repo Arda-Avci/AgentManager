@@ -1,23 +1,27 @@
 from __future__ import annotations
 
-import hashlib
 from typing import Awaitable, Callable
 
-from fastapi import HTTPException, Request
+from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.status import HTTP_401_UNAUTHORIZED
 
+from src.database.engine import async_session
+from src.auth.service import AuthService
+
+PUBLIC_PATHS = ("/docs", "/openapi.json", "/health", "/api/v1/health", "/api/v1/auth", "/mcp")
+
 
 class APIKeyMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, valid_keys: set[str]):
-        super().__init__(app)
-        self._valid_hashes = {hashlib.sha256(k.encode()).hexdigest() for k in valid_keys}
-
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable]
     ):
-        if request.url.path.startswith(("/docs", "/openapi.json", "/health")):
+        auth_enabled = getattr(request.app.state, "auth_enabled", True)
+        if not auth_enabled:
+            return await call_next(request)
+
+        if any(request.url.path.startswith(p) for p in PUBLIC_PATHS):
             return await call_next(request)
 
         api_key = request.headers.get("X-API-Key")
@@ -27,12 +31,19 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 content={"detail": "Missing X-API-Key header"},
             )
 
-        key_hash = hashlib.sha256(api_key.encode()).hexdigest()
-        if key_hash not in self._valid_hashes:
-            return JSONResponse(
-                status_code=HTTP_401_UNAUTHORIZED,
-                content={"detail": "Invalid API key"},
-            )
+        async with async_session() as session:
+            svc = AuthService(session)
+            key_record = await svc.validate_api_key(api_key)
+            if not key_record:
+                return JSONResponse(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    content={"detail": "Invalid API key"},
+                )
+
+            request.scope["agent_scope"] = {
+                "key_id": key_record.id,
+                "allowed_agents": key_record.allowed_agent_ids or [],
+            }
 
         return await call_next(request)
 

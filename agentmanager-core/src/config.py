@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     allowed_origins: list[str] = ["*"]
 
+    anthropic_api_key: str = ""
+    gemini_api_key: str = ""
+    ollama_base_url: str = "http://localhost:11434"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

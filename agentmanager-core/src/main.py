@@ -6,10 +6,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.routes import router
+from src.auth.middleware import APIKeyMiddleware
 from src.config import settings
+from src.mcp_server import mcp_server, setup_mcp
+from src.providers.registry import ProviderRegistry
 from src.router import LLMRouter
+from src.ws_manager import ws_manager
 
 router_ = LLMRouter()
+provider_registry = ProviderRegistry()
 
 
 @asynccontextmanager
@@ -25,6 +30,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.state.auth_enabled = not settings.debug
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -32,7 +39,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(APIKeyMiddleware)
 
 app.include_router(router)
 
+setup_mcp(router_)
+app.mount("/mcp", mcp_server.sse_app())
+
 app.state.llm_router = router_
+app.state.provider_registry = provider_registry
+app.state.ws_manager = ws_manager

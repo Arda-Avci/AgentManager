@@ -12,6 +12,8 @@ from src.main import app
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
+app.state.auth_enabled = False
+
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:

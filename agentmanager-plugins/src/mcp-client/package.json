@@ -1,0 +1,11 @@
+{
+  "name": "agentmanager-mcp-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AgentManager MCP Client for TypeScript",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "compile": "tsc"
+  }
+}

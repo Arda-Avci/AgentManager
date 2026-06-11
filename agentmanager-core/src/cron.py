@@ -47,3 +47,36 @@ class CronRegistry:
                 if gap > max_gap_minutes:
                     dangling.append(job)
         return dangling
+
+    async def activate_job(self, job_id: str) -> CronJobModel | None:
+        job = await self._session.get(CronJobModel, job_id)
+        if not job:
+            return None
+        job.is_active = True
+        await self._session.flush()
+        return job
+
+    async def deactivate_job(self, job_id: str) -> CronJobModel | None:
+        job = await self._session.get(CronJobModel, job_id)
+        if not job:
+            return None
+        job.is_active = False
+        await self._session.flush()
+        return job
+
+    async def get_job(self, job_id: str) -> CronJobModel | None:
+        return await self._session.get(CronJobModel, job_id)
+
+    async def delete_job(self, job_id: str) -> bool:
+        job = await self._session.get(CronJobModel, job_id)
+        if not job:
+            return False
+        await self._session.delete(job)
+        await self._session.flush()
+        return True
+
+    async def get_jobs_by_agent(self, agent_id: str) -> list[CronJobModel]:
+        result = await self._session.execute(
+            select(CronJobModel).where(CronJobModel.agent_id == agent_id)
+        )
+        return list(result.scalars().all())

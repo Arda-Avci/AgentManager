@@ -1,0 +1,10 @@
+{
+  "MCP_ENABLED": true,
+  "TELEGRAM_ENABLED": true,
+  "COT_LOGGING": true,
+  "TASK_QUEUE": true,
+  "TASK_EXECUTOR": true,
+  "LOOP_DETECTION": true,
+  "STREAMING_CHAT": true,
+  "AUDIT_LOGGING": false
+}

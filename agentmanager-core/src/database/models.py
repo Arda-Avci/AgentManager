@@ -153,3 +153,35 @@ class ToolModel(Base):
     tool_type: Mapped[str] = mapped_column(String(32), default="builtin")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class DelegationModel(Base):
+    __tablename__ = "delegations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    from_agent_id: Mapped[str] = mapped_column(String(36), ForeignKey("agents.id"), nullable=False, index=True)
+    to_agent_id: Mapped[str] = mapped_column(String(36), ForeignKey("agents.id"), nullable=False, index=True)
+    task_goal: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="pending")
+    result: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class AgentStoreModel(Base):
+    __tablename__ = "agent_store"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    agent_id: Mapped[str] = mapped_column(String(36), ForeignKey("agents.id"), nullable=False, index=True)
+    key: Mapped[str] = mapped_column(String(256), nullable=False)
+    value: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class AgentSkillModel(Base):
+    __tablename__ = "agent_skills"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    agent_id: Mapped[str] = mapped_column(String(36), ForeignKey("agents.id"), nullable=False, index=True)
+    skill_name: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)

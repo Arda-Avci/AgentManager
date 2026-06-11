@@ -173,3 +173,89 @@ class ProviderValidateResponse(BaseModel):
     name: str
     valid: bool
     error: str | None = None
+
+
+# ── Delegation ─────────────────────────────────────────────────────────
+class DelegateRequest(BaseModel):
+    to_agent_id: str
+    task_goal: str
+
+
+class DelegateResponse(BaseModel):
+    id: str
+    from_agent_id: str
+    to_agent_id: str
+    task_goal: str
+    status: str
+    result: str | None = None
+    created_at: datetime
+
+
+# ── Skills ─────────────────────────────────────────────────────────────
+class SkillResponse(BaseModel):
+    name: str
+    description: str
+    version: str
+    agent_role: str
+    required_tools: list[str]
+
+
+class AgentSkillResponse(BaseModel):
+    skill_name: str
+    created_at: datetime
+
+
+# ── Templates ──────────────────────────────────────────────────────────
+class TemplateResponse(BaseModel):
+    name: str
+    role: str
+    description: str
+    default_provider: str
+    default_model: str
+    suggested_tools: list[str]
+    assigned_skills: list[str]
+
+
+class AgentFromTemplate(BaseModel):
+    template_name: str
+    name: str | None = None
+    provider: str | None = None
+    model: str | None = None
+
+
+# ── Agent Store ────────────────────────────────────────────────────────
+class StoreSetRequest(BaseModel):
+    value: object
+
+
+class StoreEntryResponse(BaseModel):
+    key: str
+    value: object
+
+
+class AssignSkillRequest(BaseModel):
+    skill_name: str
+
+
+class TaskExecuteResponse(BaseModel):
+    id: str
+    status: str
+    result: str | None = None
+
+
+class ChainEntryResponse(BaseModel):
+    type: str
+    thought_type: str | None = None
+    content: str | None = None
+    action_name: str | None = None
+    params: dict | None = None
+    result: str | None = None
+    timestamp: datetime | None = None
+
+
+class FeatureFlagResponse(BaseModel):
+    flags: dict[str, bool]
+
+
+class FeatureFlagUpdate(BaseModel):
+    value: bool

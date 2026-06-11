@@ -1,6 +1,6 @@
 # Proje Durumu / Project Status
 
-**Son Güncelleme:** 2026-06-11 (Track 2C)
+**Son Güncelleme:** 2026-06-11 (Faz 2B tamamlandı)
 
 ---
 
@@ -14,12 +14,13 @@
 | **Repo Analizi** | ✅ Tamamlandı | 13 repo analiz edildi (orkun.md), pattern'ler belirlendi |
 | **PRD** | ✅ Yayımlandı | GitHub Issue #1 |
 | **Özellik Planı** | ✅ Güncellendi | 60+ madde, 10 faz, 5 paralel track (TODO.md) |
-| **Geliştirme** | ✅ Devam Ediyor | Faz 1A, 1D, 2C tamamlandı |
+| **Geliştirme** | ✅ Devam Ediyor | Faz 1A, 1D, 2C, 2A, 2B tamamlandı |
 
 ---
 
 ## Yapılanlar / Completed
 
+- [x] **Landing Page** — AgentManager için şık, animasyonlu, canlı CoT simülatörlü premium landing page yapıldı. Yapay zeka ile görseller üretildi.
 - [x] Proje analizi (agentclaw, appflowy, mevcut plan)
 - [x] Tasarım beyin fırtınası ve onay
 - [x] Tasarım grill testi (15 soru, tüm kararlar netleşti)
@@ -45,6 +46,19 @@
 - [x] **Faz 2C: Tools API** — `GET/POST /tools`, `GET/DELETE /tools/{id}`, `POST /tools/{id}/call`
 - [x] **Faz 2C: VS Code Plugin** — Extension iskeleti, Webview panel, Status bar, MCP Client TS library
 - [x] **Faz 2C: Testler** — 12 test (MCP Client, Registry, API endpoints), tümü geçiyor (31 total)
+- [x] **Faz 2A: Goal-Based Task Queue** — `TaskQueue` (enqueue/dequeue/list_pending/cancel/get_task) + `TaskExecutor` (LLM Router ile goal decomposition, Auto-GPT COT pattern)
+- [x] **Faz 2A: Chain-of-Thought Log Sistemi** — `LogManager` (log_thought/log_action/get_chain/stream_chain) + `ThoughtLog`/`ActionLog`/`ChainEntry` modelleri
+- [x] **Faz 2A: Looping Detection** — `LoopDetector` (detect_loop + suggest_fix, my-SuperAGI pattern)
+- [x] **Faz 2A: Feature Flags** — `FeatureFlag` enum + `FeatureFlagManager` (flags.json, env override) — appflowy pattern
+- [x] **Faz 2A: API Route'ları** — `POST /tasks/execute/{task_id}`, `GET /tasks/queue/{agent_id}`, `GET /tasks/{task_id}/chain`, `GET /features`, `PATCH /features/{flag}`
+- [x] **Faz 2A: WebSocket COT Chain** — `WS /ws/chain/{agent_id}/{task_id}` canlı COT yayını
+- [x] **Faz 2A: Testler** — 33 yeni test (14 task queue, 7 COT log, 5 detector, 7 features), tümü geçiyor (131 total)
+- [x] **Faz 2B: Skill Sistemi** — `BaseSkill` abstract + `SkillRegistry` + 4 builtin skill (code_review, doc_writer, research, tester)
+- [x] **Faz 2B: Agent-to-Agent Delegation** — `DelegationManager` + `DelegationModel` (delegate, complete, chain)
+- [x] **Faz 2B: Agent Templates** — 6 ön tanımlı şablon (code-reviewer, doc-writer, researcher, tester, assistant, custom)
+- [x] **Faz 2B: Per-Agent Store** — `AgentStore` (anahtar-değer deposu, SQLite persist) + `AgentStoreModel`
+- [x] **Faz 2B: API Route'ları** — 9 yeni endpoint (delegasyon, skill yönetimi, template, store)
+- [x] **Faz 2B: Testler** — 17+ yeni test (skills, delegation, templates, agent_store), tümü geçiyor (131 total)
 
 ---
 

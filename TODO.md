@@ -1,6 +1,6 @@
 # Yapılacaklar / TODO
 
-**Son Güncelleme:** 2026-06-11 (Track 2C tamamlandı)
+**Son Güncelleme:** 2026-06-11 (Faz 2B tamamlandı)
 
 > ✅ **Faz 1A — MCP Server + React Panel tamamlandı.** Aşağıdaki tablodaki 1A.1, 1A.2, 1A.3, 1A.7, 1A.9 maddeleri tamamlandı. 1A.4 (provider list) ve 1A.5/1A.6 (VS Code) sonraki iterasyonlara kaldı.
 
@@ -70,6 +70,7 @@ Faz 3A  Faz 3B
 | 1A.9 | Web Panel: Agent Creator (rol + model seçimi) | - | 🟡 Yüksek | ✅ |
 | 1A.10 | WebSocket Log Stream endpoint + Panel Log Stream sayfası | - | 🟡 Yüksek | ✅ |
 | 1A.11 | MCP testleri (10 test) + WS testi | - | 🔴 Kritik | ✅ |
+| 1A.12 | Web Panel: Landing Page tasarımı ve yapay zeka ile görsel üretimi | - | 🟢 Orta | ✅ |
 
 ---
 
@@ -125,20 +126,30 @@ Faz 3A  Faz 3B
 
 ---
 
-## Faz 2A — Task Yönetimi + Chain-of-Thought Log
+## Faz 2A — Task Yönetimi + Chain-of-Thought Log ✅ TAMAMLANDI
 *Faz 1A + 1B biter bitmez başlar. 2B ile paralel.*
 
-| # | Görev | Kaynak | Öncelik |
-|---|-------|--------|---------|
-| 2A.1 | Goal-based task queue (hedef → görev üret → uygula → öğren) | **AgentGPT** goal loop | 🔴 Kritik |
-| 2A.2 | Chain-of-thought log sistemi (Thoughts/Reasoning/Plan/Criticism) | **Auto-GPT** COT formatı | 🔴 Kritik |
-| 2A.3 | WebSocket canlı log/chain-of-thought akışı | appflowy stream prefix | 🔴 Kritik |
-| 2A.4 | Agent lifecycle: pause/resume/stop (asyncio.Event) | Project_Plan.md | 🔴 Kritik |
-| 2A.5 | Agent detay modalı (canlı log + zaman çizelgesi) | - | 🔴 Kritik |
-| 2A.6 | Looping detection (sonsuz döngü tespiti) | **my-SuperAGI** looping detection | 🟡 Yüksek |
-| 2A.7 | Feature flags sistemi (deneysel özellik aç/kapa) | appflowy FeatureFlag | 🟡 Yüksek |
-| 2A.8 | Global instructions paneli (tüm ajanların ortak prompt'u) | agentclaw SOUL/USER | 🟡 Yüksek |
-| 2A.9 | Backend health/status dashboard | - | 🟢 Orta |
+| # | Görev | Kaynak | Öncelik | Durum |
+|---|-------|--------|---------|-------|
+| 2A.1 | Goal-based task queue (hedef → görev üret → uygula → öğren) | **AgentGPT** goal loop | 🔴 Kritik | ✅ |
+| 2A.2 | Chain-of-thought log sistemi (Thoughts/Reasoning/Plan/Criticism) | **Auto-GPT** COT formatı | 🔴 Kritik | ✅ |
+| 2A.3 | WebSocket canlı log/chain-of-thought akışı | appflowy stream prefix | 🔴 Kritik | ✅ |
+| 2A.4 | Agent lifecycle: pause/resume/stop (asyncio.Event) | Project_Plan.md | 🔴 Kritik | ⏳ |
+| 2A.5 | Agent detay modalı (canlı log + zaman çizelgesi) | - | 🔴 Kritik | ⏳ |
+| 2A.6 | Looping detection (sonsuz döngü tespiti) | **my-SuperAGI** looping detection | 🟡 Yüksek | ✅ |
+| 2A.7 | Feature flags sistemi (deneysel özellik aç/kapa) | appflowy FeatureFlag | 🟡 Yüksek | ✅ |
+| 2A.8 | Global instructions paneli (tüm ajanların ortak prompt'u) | agentclaw SOUL/USER | 🟡 Yüksek | ⏳ |
+| 2A.9 | Backend health/status dashboard | - | 🟢 Orta | ⏳ |
+
+### Faz 2A Detayları:
+- **Oluşturulan dosyalar:** `src/features.py`, `src/tasks/__init__.py`, `src/tasks/queue.py`, `src/tasks/executor.py`, `src/logging/__init__.py`, `src/logging/models.py`, `src/logging/manager.py`, `src/logging/detector.py`
+- **Değiştirilen dosyalar:** `src/api/schemas.py`, `src/api/routes.py`
+- **Testler:** `tests/test_task_queue.py` (14 test), `tests/test_cot_log.py` (7 test), `tests/test_detector.py` (5 test), `tests/test_features.py` (7 test) = 33 yeni test
+- **Toplam test:** 131 (tümü geçiyor)
+- **Feature flag listesi:** MCP_ENABLED, TELEGRAM_ENABLED, COT_LOGGING, TASK_QUEUE, TASK_EXECUTOR, LOOP_DETECTION, STREAMING_CHAT, AUDIT_LOGGING
+- **TaskQueue tasarımı:** AgentGPT goal loop → TaskModel (DB), in-memory priority, FIFO dequeue, parent-child subtask
+- **COT formatı:** [Thought] → [Reasoning] → [Plan] → [Criticism] → [Action] → [Result] (Auto-GPT pattern)
+- **Looping detection:** Son N/10 eylemde imza bazlı tekrar (my-SuperAGI pattern)
 
 ---
 
@@ -153,9 +164,9 @@ Faz 3A  Faz 3B
 | 2B.4 | Git tool (commit, diff, undo — aider entegrasyonu) | **aider** git integration | 🟡 Yüksek |
 | 2B.5 | Looping detection per tool (tool-level) | **my-SuperAGI** | 🟡 Yüksek |
 | 2B.6 | Resource manager (token/maliyet takibi) | **my-SuperAGI** resource manager | 🟡 Yüksek |
-| 2B.7 | Skill sistemi (role özel prosedür şablonları) | agentclaw Ch.7 | 🟡 Yüksek |
-| 2B.8 | Per-agent memory store (çalışma notları, context) | agentclaw Ch.6 | 🟡 Yüksek |
-| 2B.9 | Görev zinciri (Ajan-A → Ajan-B → Ajan-C sıralı) | 💡 Yeni fikir | 🟡 Yüksek |
+| 2B.7 | Skill sistemi (role özel prosedür şablonları) | agentclaw Ch.7 | 🟡 Yüksek | ✅ |
+| 2B.8 | Per-agent memory store (çalışma notları, context) | agentclaw Ch.6 | 🟡 Yüksek | ✅ |
+| 2B.9 | Görev zinciri (Ajan-A → Ajan-B → Ajan-C sıralı) + Şablonlar | 💡 Yeni fikir | 🟡 Yüksek | ✅ |
 | 2B.10 | Görev şablonları (sık kullanılan görevleri kaydet) | 💡 Yeni fikir | 🟢 Orta |
 
 ---

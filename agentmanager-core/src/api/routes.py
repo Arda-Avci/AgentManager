@@ -1,38 +1,60 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.schemas import (
     AgentCreate,
+    AgentFromTemplate,
     AgentResponse,
+    AgentSkillResponse,
     AgentUpdate,
     ApiKeyCreate,
     ApiKeyCreatedResponse,
     ApiKeyResponse,
+    AssignSkillRequest,
+    ChainEntryResponse,
     ChatRequest,
     ChatResponse,
     CronCreate,
     CronResponse,
+    DelegateRequest,
+    DelegateResponse,
     DeviceConfirmRequest,
     DeviceConfirmResponse,
     DevicePairRequest,
     DevicePairResponse,
+    FeatureFlagResponse,
+    FeatureFlagUpdate,
     ProviderCreate,
     ProviderResponse,
     ProviderValidateResponse,
     SessionResponse,
+    SkillResponse,
+    StoreEntryResponse,
+    StoreSetRequest,
     TaskCreate,
+    TaskExecuteResponse,
     TaskResponse,
+    TemplateResponse,
     ToolCallRequest,
     ToolCreate,
     ToolResponse,
 )
 from src.database.engine import get_session
-from src.database.models import ProviderModel, TaskModel
+from src.database.models import AgentModel, ProviderModel, TaskModel
+from src.features import FeatureFlag, features
+from src.logging.detector import LoopDetector
+from src.logging.manager import LogManager
+from src.logging.models import ActionLog, ThoughtLog
 from src.providers.registry import ProviderRegistry
 from src.router import LLMRouter
 from src.session import SessionManager
+from src.tasks.executor import TaskExecutor
+from src.tasks.queue import TaskPriority, TaskQueue
+from src.ws_manager import ws_manager
 
 router = APIRouter(prefix="/api/v1")
 
@@ -627,6 +649,372 @@ async def ws_logs(websocket: WebSocket, agent_id: str):
             await websocket.receive_text()
     except WebSocketDisconnect:
         mgr.disconnect(agent_id, websocket)
+
+
+# ── Task Queue ─────────────────────────────────────────────────────────
+@router.post("/tasks/execute/{task_id}", response_model=TaskExecuteResponse)
+async def execute_task(
+    task_id: str,
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+):
+    task = await session.get(TaskModel, task_id)
+    if not task:
+        raise HTTPException(404, "Task not found")
+    if task.status != "pending":
+        raise HTTPException(400, f"Task already {task.status}")
+
+    task.status = "running"
+    await session.flush()
+
+    router_: LLMRouter = request.app.state.llm_router
+    executor = TaskExecutor(session, router_, ws_manager)
+    result = await executor.execute(task_id)
+    return TaskExecuteResponse(id=result.id, status=result.status, result=result.result)
+
+
+@router.get("/tasks/queue/{agent_id}", response_model=list[TaskResponse])
+async def list_agent_queue(
+    agent_id: str, session: AsyncSession = Depends(get_session)
+):
+    q = TaskQueue(session)
+    tasks = await q.list_pending(agent_id)
+    return [
+        TaskResponse(
+            id=t.id,
+            agent_id=t.agent_id,
+            goal=t.goal,
+            status=t.status,
+            result=t.result,
+            created_at=t.created_at,
+        )
+        for t in tasks
+    ]
+
+
+@router.get("/tasks/{task_id}/chain", response_model=list[ChainEntryResponse])
+async def get_task_chain(task_id: str):
+    log_manager = LogManager()
+    chain = log_manager.get_chain("", task_id)
+    return [
+        ChainEntryResponse(
+            type=e.type,
+            thought_type=e.thought.thought_type if e.thought else None,
+            content=e.thought.content if e.thought else e.action.result if e.action else None,
+            action_name=e.action.action_name if e.action else None,
+            params=e.action.params if e.action else None,
+            result=e.action.result if e.action else None,
+            timestamp=(e.thought.timestamp if e.thought else e.action.timestamp) if (e.thought or e.action) else None,
+        )
+        for e in chain
+    ]
+
+
+# ── Feature Flags ──────────────────────────────────────────────────────
+@router.get("/features", response_model=FeatureFlagResponse)
+async def list_features():
+    return FeatureFlagResponse(flags=features.all_flags())
+
+
+@router.patch("/features/{flag}", response_model=FeatureFlagResponse)
+async def update_feature(flag: str, body: FeatureFlagUpdate):
+    if flag not in [f.value for f in FeatureFlag]:
+        raise HTTPException(404, f"Unknown feature flag '{flag}'")
+    features.set_enabled(flag, body.value)
+    return FeatureFlagResponse(flags=features.all_flags())
+
+
+# ── WebSocket COT Chain ────────────────────────────────────────────────
+@router.websocket("/ws/chain/{agent_id}/{task_id}")
+async def ws_chain(websocket: WebSocket, agent_id: str, task_id: str):
+    await ws_manager.connect(agent_id, websocket)
+    log_manager = LogManager(ws_manager)
+    try:
+        await log_manager.stream_chain(agent_id, task_id)
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(agent_id, websocket)
+
+
+# ── Delegation ──────────────────────────────────────────────────────────
+@router.post("/agents/{agent_id}/delegate", response_model=DelegateResponse, status_code=201)
+async def delegate_task(
+    agent_id: str,
+    body: DelegateRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.registry import AgentRegistry
+    from src.delegation.manager import DelegationManager
+
+    registry = AgentRegistry(session)
+    from_agent = await registry.get_agent(agent_id)
+    if not from_agent:
+        raise HTTPException(404, "From-agent not found")
+    to_agent = await registry.get_agent(body.to_agent_id)
+    if not to_agent:
+        raise HTTPException(404, "To-agent not found")
+
+    dm = DelegationManager(session)
+    delegation = await dm.delegate(agent_id, body.to_agent_id, body.task_goal)
+    return DelegateResponse(
+        id=delegation.id,
+        from_agent_id=delegation.from_agent_id,
+        to_agent_id=delegation.to_agent_id,
+        task_goal=delegation.task_goal,
+        status=delegation.status,
+        result=delegation.result,
+        created_at=delegation.created_at,
+    )
+
+
+@router.get("/agents/{agent_id}/delegations", response_model=list[DelegateResponse])
+async def get_agent_delegations(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.delegation.manager import DelegationManager
+
+    dm = DelegationManager(session)
+    delegations = await dm.get_delegations(agent_id)
+    return [
+        DelegateResponse(
+            id=d.id,
+            from_agent_id=d.from_agent_id,
+            to_agent_id=d.to_agent_id,
+            task_goal=d.task_goal,
+            status=d.status,
+            result=d.result,
+            created_at=d.created_at,
+        )
+        for d in delegations
+    ]
+
+
+@router.post("/delegations/{delegation_id}/complete", response_model=DelegateResponse)
+async def complete_delegation(
+    delegation_id: str,
+    body: dict,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.delegation.manager import DelegationManager
+
+    dm = DelegationManager(session)
+    result = body.get("result", "")
+    delegation = await dm.complete_delegation(delegation_id, result)
+    if not delegation:
+        raise HTTPException(404, "Delegation not found")
+    return DelegateResponse(
+        id=delegation.id,
+        from_agent_id=delegation.from_agent_id,
+        to_agent_id=delegation.to_agent_id,
+        task_goal=delegation.task_goal,
+        status=delegation.status,
+        result=delegation.result,
+        created_at=delegation.created_at,
+    )
+
+
+@router.get("/agents/{agent_id}/delegation-chain", response_model=list[DelegateResponse])
+async def get_delegation_chain(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.delegation.manager import DelegationManager
+
+    dm = DelegationManager(session)
+    chain = await dm.get_chain(agent_id)
+    return [
+        DelegateResponse(
+            id=d.id,
+            from_agent_id=d.from_agent_id,
+            to_agent_id=d.to_agent_id,
+            task_goal=d.task_goal,
+            status=d.status,
+            result=d.result,
+            created_at=d.created_at,
+        )
+        for d in chain
+    ]
+
+
+# ── Skills ──────────────────────────────────────────────────────────────
+_skill_registry: object | None = None
+
+
+def _get_skill_registry():
+    global _skill_registry
+    if _skill_registry is None:
+        from src.skills.builtin import CodeReviewSkill, DocWriterSkill, ResearchSkill, TesterSkill
+        from src.skills.registry import SkillRegistry
+
+        reg = SkillRegistry()
+        reg.register(CodeReviewSkill())
+        reg.register(DocWriterSkill())
+        reg.register(ResearchSkill())
+        reg.register(TesterSkill())
+        _skill_registry = reg
+    return _skill_registry
+
+
+@router.get("/skills", response_model=list[SkillResponse])
+async def list_skills():
+    registry = _get_skill_registry()
+    return [
+        SkillResponse(
+            name=s.name,
+            description=s.description,
+            version=s.version,
+            agent_role=s.agent_role.value,
+            required_tools=s.required_tools,
+        )
+        for s in registry.list_all()
+    ]
+
+
+@router.post("/agents/{agent_id}/skills", response_model=AgentSkillResponse, status_code=201)
+async def assign_skill_to_agent(
+    agent_id: str,
+    body: AssignSkillRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.database.models import AgentSkillModel
+
+    agent = await session.get(AgentModel, agent_id)
+    if not agent:
+        raise HTTPException(404, "Agent not found")
+
+    entry = AgentSkillModel(agent_id=agent_id, skill_name=body.skill_name)
+    session.add(entry)
+    await session.flush()
+    return AgentSkillResponse(skill_name=entry.skill_name, created_at=entry.created_at)
+
+
+@router.get("/agents/{agent_id}/skills", response_model=list[AgentSkillResponse])
+async def get_agent_skills(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from sqlalchemy import select
+
+    from src.database.models import AgentSkillModel
+
+    result = await session.execute(
+        select(AgentSkillModel).where(AgentSkillModel.agent_id == agent_id)
+    )
+    return [
+        AgentSkillResponse(skill_name=r.skill_name, created_at=r.created_at)
+        for r in result.scalars().all()
+    ]
+
+
+# ── Templates ───────────────────────────────────────────────────────────
+@router.get("/templates", response_model=list[TemplateResponse])
+async def list_templates():
+    from src.templates import AGENT_TEMPLATES
+
+    return [
+        TemplateResponse(
+            name=t["name"],
+            role=t["role"],
+            description=t["description"],
+            default_provider=t["default_provider"],
+            default_model=t["default_model"],
+            suggested_tools=t["suggested_tools"],
+            assigned_skills=t["assigned_skills"],
+        )
+        for t in AGENT_TEMPLATES
+    ]
+
+
+@router.post("/agents/from-template", response_model=AgentResponse, status_code=201)
+async def create_agent_from_template(
+    body: AgentFromTemplate,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.registry import AgentRegistry
+    from src.templates import AGENT_TEMPLATES
+
+    template = next((t for t in AGENT_TEMPLATES if t["name"] == body.template_name), None)
+    if not template:
+        raise HTTPException(404, f"Template '{body.template_name}' not found")
+
+    agent_name = body.name or f"{template['name']}-{uuid.uuid4().hex[:8]}"
+
+    registry = AgentRegistry(session)
+    existing = await registry.get_agent_by_name(agent_name)
+    if existing:
+        raise HTTPException(409, f"Agent '{agent_name}' already exists")
+
+    agent = await registry.create_agent(
+        name=agent_name,
+        role=template["role"],
+        system_prompt=template["system_prompt"],
+        provider=body.provider or template["default_provider"],
+        model=body.model or template["default_model"],
+    )
+
+    for skill_name in template["assigned_skills"]:
+        from src.database.models import AgentSkillModel
+
+        entry = AgentSkillModel(agent_id=agent.id, skill_name=skill_name)
+        session.add(entry)
+    await session.flush()
+
+    return AgentResponse(
+        id=agent.id,
+        name=agent.name,
+        role=agent.role,
+        status=agent.status,
+        provider=agent.provider,
+        model=agent.model,
+        is_active=agent.is_active,
+        created_at=agent.created_at,
+    )
+
+
+# ── Agent Store ─────────────────────────────────────────────────────────
+@router.get("/agents/{agent_id}/store", response_model=list[StoreEntryResponse])
+async def list_agent_store(
+    agent_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.store import AgentStore
+
+    store = AgentStore(session)
+    keys = await store.list_keys(agent_id)
+    result = []
+    for key in keys:
+        value = await store.get(agent_id, key)
+        result.append(StoreEntryResponse(key=key, value=value))
+    return result
+
+
+@router.put("/agents/{agent_id}/store/{key}", response_model=StoreEntryResponse)
+async def set_agent_store(
+    agent_id: str,
+    key: str,
+    body: StoreSetRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.store import AgentStore
+
+    store = AgentStore(session)
+    await store.set(agent_id, key, body.value)
+    return StoreEntryResponse(key=key, value=body.value)
+
+
+@router.delete("/agents/{agent_id}/store/{key}", status_code=204)
+async def delete_agent_store_key(
+    agent_id: str,
+    key: str,
+    session: AsyncSession = Depends(get_session),
+):
+    from src.agents.store import AgentStore
+
+    store = AgentStore(session)
+    if not await store.delete(agent_id, key):
+        raise HTTPException(404, "Store key not found")
 
 
 @router.get("/health")

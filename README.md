@@ -1,12 +1,11 @@
 <p align="center">
-  <img src="https://placehold.co/120x120/1a1a2e/eee?text=AM" alt="AgentManager Logo" width="120" height="120"/>
+  <img src="docs/images/agentmanager_logo.png" alt="AgentManager Logo" width="200" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);"/>
 </p>
 
-<h1 align="center">AgentManager</h1>
+<h1 align="center">🚀 AgentManager</h1>
 
 <p align="center">
-  <b>Çoklu-Ajan Orkestrasyon Platformu</b><br>
-  <b>Multi-Agent Orchestration Platform</b>
+  <b>Çoklu-Ajan Orkestrasyon Platformu | Multi-Agent Orchestration Platform</b>
 </p>
 
 <p align="center">
@@ -15,24 +14,26 @@
 </p>
 
 <p align="center">
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white">
-  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white">
-  <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-purple">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white">
+  <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-purple?style=for-the-badge">
 </p>
 
 ---
 
 ## 🇹🇷 Türkçe
 
-### AgentManager Nedir?
+### 🔍 AgentManager Nedir?
 
-**AgentManager**, birden çok yapay zeka sağlayıcısını (Claude, Gemini, GPT, Ollama, OpenRouter...) tek bir çatı altında yönetmenizi, otonom görev zincirleri kurmanızı ve bunları popüler IDE/CLI platformlarıyla entegre etmenizi sağlayan, **platform-bağımsız** ve production-ready bir multi-agent orkestrasyon sistemidir.
+**AgentManager**, birden çok yapay zeka sağlayıcısını (**Claude, Gemini, GPT, Ollama, OpenRouter**...) tek bir çatı altında yönetmenizi, otonom görev zincirleri kurmanızı ve bunları popüler IDE/CLI platformlarıyla entegre etmenizi sağlayan, **platform-bağımsız** ve üretime hazır (production-ready) bir multi-agent orkestrasyon sistemidir.
 
-Ajanlarınızın durumunu, düşünen akışlarını (Chain-of-Thought) ve araç kullanımlarını gerçek zamanlı izleyebileceğiniz modern bir web panelinin yanı sıra; VS Code, Windsurf, Cursor gibi popüler IDE'ler için eklentiler ve komut satırı araçları (Codex CLI) sunar.
+Ajanlarınızın durumunu, düşünme akışlarını (**Chain-of-Thought**) ve araç kullanımlarını gerçek zamanlı izleyebileceğiniz modern bir web panelinin yanı sıra; **VS Code, Windsurf, Cursor** gibi popüler IDE'ler için eklentiler ve komut satırı araçları (**Codex CLI**) sunar.
 
-### Temel Özellikler
+---
+
+### ✨ Temel Özellikler
 
 *   🤖 **Gelişmiş Çoklu Sağlayıcı (Multi-Provider)**: Her ajan için bağımsız model (OpenAI, Anthropic, Google, OpenRouter, Ollama) seçimi ve hata durumunda otomatik model değiştirme (fallback).
 *   🎯 **Hedef Odaklı Görev Yönetimi (Goal-Based Task Queue)**: Verilen ana hedefleri alt görevlere bölen, önceliklendiren ve sırayla otonom olarak işleten akıllı kuyruk sistemi.
@@ -46,10 +47,12 @@ Ajanlarınızın durumunu, düşünen akışlarını (Chain-of-Thought) ve araç
     *   **Supervisor Hata Kurtarma**: Çöken ajanların durumunu saklayıp otomatik yeniden başlatma.
     *   **Rate Limiting**: API koruması ve istek limitleme.
 
-### Desteklenen Platformlar
+---
+
+### 💻 Desteklenen Platformlar
 
 | Platform | Tip | Durum |
-|----------|-----|-------|
+| :--- | :--- | :---: |
 | **VS Code** | Extension (TS + Webview) | ✅ Tamamlandı |
 | **Windsurf** | Extension (TS + Status bar) | ✅ Tamamlandı |
 | **Cursor** | Extension (Webview + Chat) | ✅ Tamamlandı |
@@ -57,7 +60,9 @@ Ajanlarınızın durumunu, düşünen akışlarını (Chain-of-Thought) ve araç
 | **Codex CLI** | MCP over stdio CLI | ✅ Tamamlandı |
 | **Diğer MCP istemcileri** | Standard MCP SDK | ✅ Uyumlu |
 
-### Hızlı Kurulum
+---
+
+### ⚙️ Hızlı Kurulum
 
 ```bash
 # Core (FastAPI) bağımlılıklarını kurun
@@ -73,27 +78,29 @@ cd ../agentmanager-plugins
 npm install
 ```
 
-### Çalıştırma
+### 🚀 Çalıştırma
 
 ```bash
-# Core backend'i başlatın (Port: 3010)
+# Core backend'i başlatın (Port: 3030)
 npm run dev # veya doğrudan python core başlatıcı
 
 # Web panel arayüzünü açın
-# http://localhost:3010
+# http://localhost:3030
 ```
 
 ---
 
 ## 🇬🇧 English
 
-### What is AgentManager?
+### 🔍 What is AgentManager?
 
-**AgentManager** is a **platform-independent**, production-ready multi-agent orchestration system that allows you to manage multiple AI providers (Claude, Gemini, GPT, Ollama, OpenRouter...) under a single interface, construct autonomous task pipelines, and integrate them with popular IDEs and CLI tools.
+**AgentManager** is a **platform-independent**, production-ready multi-agent orchestration system that allows you to manage multiple AI providers (**Claude, Gemini, GPT, Ollama, OpenRouter**...) under a single interface, construct autonomous task pipelines, and integrate them with popular IDEs and CLI tools.
 
-It comes with a modern React web panel to monitor agent status, Chain-of-Thought (CoT) reasoning, and tool executions in real-time, accompanied by plugins for VS Code, Windsurf, Cursor, and a command-line interface (Codex CLI).
+It comes with a modern React web panel to monitor agent status, Chain-of-Thought (CoT) reasoning, and tool executions in real-time, accompanied by plugins for **VS Code, Windsurf, Cursor**, and a command-line interface (**Codex CLI**).
 
-### Core Features
+---
+
+### ✨ Core Features
 
 *   🤖 **Advanced Multi-Provider Routing**: Independent model assignment per agent (OpenAI, Anthropic, Google, OpenRouter, Ollama) with automated fallback management.
 *   🎯 **Goal-Based Task Queue & Executor**: Smart queue engine that decomposes high-level goals into subtasks, prioritizing and executing them autonomously.
@@ -107,10 +114,12 @@ It comes with a modern React web panel to monitor agent status, Chain-of-Thought
     *   **Supervisor Crash Recovery**: Session state checkpointing and automatic agent restart (up to 3 retries).
     *   **Rate Limiting**: Global Token Bucket middleware protecting the API.
 
-### Supported Platforms
+---
+
+### 💻 Supported Platforms
 
 | Platform | Type | Status |
-|----------|------|--------|
+| :--- | :--- | :---: |
 | **VS Code** | Extension (TS + Webview) | ✅ Completed |
 | **Windsurf** | Extension (TS + Status bar) | ✅ Completed |
 | **Cursor** | Extension (Webview + Chat) | ✅ Completed |
@@ -118,7 +127,9 @@ It comes with a modern React web panel to monitor agent status, Chain-of-Thought
 | **Codex CLI** | MCP over stdio CLI | ✅ Completed |
 | **Other MCP Clients** | Standard MCP SDK | ✅ Compatible |
 
-### Quick Start
+---
+
+### ⚙️ Quick Start
 
 ```bash
 # Install Core (FastAPI) dependencies
@@ -134,21 +145,21 @@ cd ../agentmanager-plugins
 npm install
 ```
 
-### Running
+### 🚀 Running
 
 ```bash
-# Start core backend (Port: 3010)
+# Start core backend (Port: 3030)
 npm run dev
 
 # Open the web panel
-# http://localhost:3010
+# http://localhost:3030
 ```
 
 ---
 
-## Proje Yapısı / Project Structure
+## 📂 Proje Yapısı / Project Structure
 
-```
+```text
 AgentManager/
 ├── agentmanager-core/      # Python FastAPI Çekirdek / Python FastAPI Core
 │   ├── src/                # İş mantığı, Ajanlar, Loglama, Kota, Hata Kurtarma
@@ -164,10 +175,10 @@ AgentManager/
 
 ---
 
-## Dokümantasyon / Documentation
+## 📖 Dokümantasyon / Documentation
 
 | 🇹🇷 Türkçe | 🇬🇧 English |
-|------------|-------------|
+| :--- | :--- |
 | [Kurulum Kılavuzu](docs/help/kurulum.md) | [Setup Guide](docs/help/setup.md) |
 | [Kullanım Kılavuzu](docs/help/kullanim.md) | [Usage Guide](docs/help/usage.md) |
 | [Ajan Yönetimi](docs/help/ajan-yonetimi.md) | [Agent Management](docs/help/agent-management.md) |
